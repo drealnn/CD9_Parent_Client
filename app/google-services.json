@@ -1,0 +1,101 @@
+{
+  "project_info": {
+    "project_id": "bubbly-sentinel-114117",
+    "project_number": "53665769505",
+    "name": "CD9-Client"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:53665769505:android:7d1abee7e9c8f7d5",
+        "client_id": "android:com.example.daniel.clientapp",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "com.example.daniel.clientapp",
+          "certificate_hash": []
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "53665769505-set24i03q52ook74glm0i5eprlf4c8vo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.daniel.clientapp",
+            "certificate_hash": "F0F8354EF9C2D4B506B1D383982378CF2DC7159C"
+          }
+        },
+        {
+          "client_id": "53665769505-bp4qm9qb1e8b5d2csrqtanib9i9fei4m.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "53665769505-gpt8e05s8r4f5n1235aom3uqteesc612.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 2,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 2
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:53665769505:android:af24e92d523a4154",
+        "client_id": "android:com.example.daniel.cd9_parent_client",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "com.example.daniel.cd9_parent_client",
+          "certificate_hash": []
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "53665769505-bp4qm9qb1e8b5d2csrqtanib9i9fei4m.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "53665769505-gpt8e05s8r4f5n1235aom3uqteesc612.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 2,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 1
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}
