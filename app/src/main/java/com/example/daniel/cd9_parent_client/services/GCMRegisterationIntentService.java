@@ -12,6 +12,7 @@ import com.example.daniel.cd9_parent_client.JSONClassFiles.GcmToken;
 import com.example.daniel.cd9_parent_client.JSONClassFiles.User;
 import com.example.daniel.cd9_parent_client.R;
 
+import com.example.daniel.cd9_parent_client.Utils;
 import com.example.daniel.cd9_parent_client.networking.CD9ClientInterface;
 import com.example.daniel.cd9_parent_client.networking.ServiceGenerator;
 import com.google.android.gms.gcm.GcmPubSub;
@@ -21,6 +22,7 @@ import com.google.api.client.auth.oauth2.Credential;
 
 import java.io.IOException;
 
+import okhttp3.internal.Util;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -100,7 +102,7 @@ public class GCMRegisterationIntentService extends IntentService {
         String authToken = pref.getString(getString(R.string.custom_token_preference_key), "null");
 
         User[] user;
-        CD9ClientInterface client = ServiceGenerator.CreateService(CD9ClientInterface.class, authToken);
+        CD9ClientInterface client = ServiceGenerator.CreateService(CD9ClientInterface.class, Utils.getGlobalString(this, "USERNAME"), Utils.getGlobalString(this, "PASSWORD"));
         Call<User[]> getTeenID = client.getIds();
         try {
             Response response1 = getTeenID.execute();
