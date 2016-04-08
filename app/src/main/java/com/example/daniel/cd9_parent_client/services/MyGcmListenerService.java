@@ -16,7 +16,7 @@ import com.google.android.gms.gcm.GcmListenerService;
 
 public class MyGcmListenerService extends GcmListenerService {
 
-    private static final String TAG = "MyGcmListenerService";
+    private static final String TAG = "GcmServicePARENT";
 
     /**
      * Called when message is received.
@@ -94,7 +94,7 @@ public class MyGcmListenerService extends GcmListenerService {
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("GCM Message")
+                .setContentTitle("Alert")
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri);

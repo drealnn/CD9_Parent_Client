@@ -99,7 +99,7 @@ public class GCMRegisterationIntentService extends IntentService {
         String userId = "null";
 
         SharedPreferences pref = this.getSharedPreferences(getString(R.string.preference_file_key), MODE_PRIVATE);
-        String authToken = pref.getString(getString(R.string.custom_token_preference_key), "null");
+
 
         User[] user;
         CD9ClientInterface client = ServiceGenerator.CreateService(CD9ClientInterface.class, Utils.getGlobalString(this, "USERNAME"), Utils.getGlobalString(this, "PASSWORD"));

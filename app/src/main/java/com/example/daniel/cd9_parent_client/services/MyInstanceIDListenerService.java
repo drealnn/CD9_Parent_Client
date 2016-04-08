@@ -2,6 +2,8 @@ package com.example.daniel.cd9_parent_client.services;
 
 import android.content.Intent;
 
+import com.example.daniel.cd9_parent_client.LoginActivity;
+import com.example.daniel.cd9_parent_client.Utils;
 import com.google.android.gms.iid.InstanceIDListenerService;
 
 
@@ -18,8 +20,11 @@ public class MyInstanceIDListenerService extends InstanceIDListenerService {
     @Override
     public void onTokenRefresh() {
         // Fetch updated Instance ID token and notify our app's server of any changes (if applicable).
-        Intent intent = new Intent(this, GCMRegisterationIntentService.class);
-        startService(intent);
+        Utils.setGlobalBoolean(this, "HAS_REGISTERED", false);
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+
+
     }
     // [END refresh_token]
 

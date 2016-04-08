@@ -61,6 +61,10 @@
             </intent-filter>
         </service>
 
+        <activity
+            android:name=".DashBoardActivity"
+            android:label="DashBoard"></activity>
+
 
 
     </application>

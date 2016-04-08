@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -21,12 +22,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -34,14 +34,23 @@ import android.widget.Button;
 import android.widget.EditText;
 //import android.widget.GridLayout;
 //import android.widget.LinearLayout;
-import android.widget.GridLayout;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
+import com.example.daniel.cd9_parent_client.JSONClassFiles.GcmToken;
+import com.example.daniel.cd9_parent_client.JSONClassFiles.User;
+import com.example.daniel.cd9_parent_client.networking.CD9ClientInterface;
+import com.example.daniel.cd9_parent_client.networking.ServiceGenerator;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -72,7 +81,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private UserLoginTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mEmailView;
+    private AutoCompleteTextView mUsernameView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
@@ -82,14 +91,25 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        tv = new TextView(this);
+        Intent i = new Intent();
+        i.setClass(getApplicationContext(), DashBoardActivity.class);
+
+        /**
+         * If the parent has already registered, close the activity and start the dashboard
+         * Could also probably programmatically change the manifest for launch activity on successful sign
+         *  in
+         */
+        // Probably should use enums/strings.xml for keys...but lazy
+        if (Utils.getGlobalBoolean(this, "HAS_REGISTERED"))
+        {
+            startActivity(i);
+            finish();
+        }
 
 
 
-        tv.setText("" +
-                "To start, please login using the email/password combination created for the parent during teen setup. Once this one-time login is completed, new alerts will be present in the notification bar as well as in the web-based dashboard.");
 
-        tv.setGravity(Gravity.CENTER_HORIZONTAL);
+        // Create alert for parent to explain initial sign up
 
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
 
@@ -116,7 +136,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        mUsernameView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
@@ -142,7 +162,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-
+        // display alert
         alert11.show();
     }
 
@@ -162,7 +182,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             return true;
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(mUsernameView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok, new View.OnClickListener() {
                         @Override
                         @TargetApi(Build.VERSION_CODES.M)
@@ -201,11 +221,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         // Reset errors.
-        mEmailView.setError(null);
+        mUsernameView.setError(null);
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
+        String username = mUsernameView.getText().toString();
         String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
@@ -218,16 +238,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             cancel = true;
         }
 
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
+        // Check for a valid username.
+        if (TextUtils.isEmpty(username)) {
+            mUsernameView.setError(getString(R.string.error_field_required));
+            focusView = mUsernameView;
             cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
+        }/* else if (!isEmailValid(email)) {
+            mUsernameView.setError(getString(R.string.error_invalid_email));
+            focusView = mUsernameView;
             cancel = true;
-        }
+        }*/
 
         if (cancel) {
             // There was an error; don't attempt login and focus the first
@@ -237,7 +257,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(username, password);
             mAuthTask.execute((Void) null);
         }
     }
@@ -328,7 +348,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 new ArrayAdapter<>(LoginActivity.this,
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
-        mEmailView.setAdapter(adapter);
+        mUsernameView.setAdapter(adapter);
     }
 
 
@@ -346,51 +366,140 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
-        private final String mEmail;
+    enum ErrorMsg {CANT_REGISTER, NO_ID, CANT_CONNECT, BAD_RESPONSE, NONE};
+
+    public class UserLoginTask extends AsyncTask<Void, Void, ErrorMsg> {
+
+        private final String mUsername;
         private final String mPassword;
+        private final String TAG = "UserLoginTask";
 
-        UserLoginTask(String email, String password) {
-            mEmail = email;
+        // java bullshit won't let enums inside nested classes
+        //enum errorMsg {HELLO};
+
+        UserLoginTask(String username, String password) {
+            mUsername = username;
             mPassword = password;
         }
 
+        protected void onProgressUpdate(Void... progress) {
+
+        }
+
+
         @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
+        protected ErrorMsg doInBackground(Void... params) {
+
+            /**
+             * Get registration token from google's GCM service
+             */
+
+            InstanceID instanceID = InstanceID.getInstance(LoginActivity.this);
+            String token = null;
+            try {
+                token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
+                        GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return ErrorMsg.CANT_REGISTER;
+            }
+
+
+            Log.e(TAG, "GCM Registration Token: " + token);
+
+            /**
+             * Get Parent's id from our server using the supplied credentials
+             */
+
+            String userId = "null";
+            User[] user;
+            CD9ClientInterface client = ServiceGenerator.CreateService(CD9ClientInterface.class, mUsername, mPassword);
+            Call<User[]> getParentID = client.getIds();
 
             try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
+                Response response1 = getParentID.execute();
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+                if (!response1.isSuccess()) {
+                    Log.e(TAG, "Bad response when trying to retrieve parent id");
+                    return ErrorMsg.NO_ID;
                 }
+                else {
+                    user = (User[]) response1.body();
+                    Log.e(TAG, user[0].getId());
+                    userId = user[0].getId();
+
+                }
+
+            }catch (IOException e)
+            {
+                Log.e(TAG, "IOException when trying to retrieve parent id");
+                return ErrorMsg.CANT_CONNECT;
             }
 
-            // TODO: register the new account here.
-            return true;
+
+            /**
+             * Send the GCM token to the server
+             */
+
+            Call<GcmToken> sendGcmTokenCall = client.sendGcmToken(userId, new GcmToken(token));
+
+
+            try {
+                Response response = sendGcmTokenCall.execute();
+
+                if (!response.isSuccess()) {
+                    Log.e(TAG, "Bad Response when sending gcm token");
+                    return ErrorMsg.BAD_RESPONSE;
+                }
+
+            } catch (IOException e) {
+                Log.e(TAG, "IOException when sending gcm token");
+                return ErrorMsg.CANT_CONNECT;
+
+            }
+
+            return ErrorMsg.NONE;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final ErrorMsg msg) {
             mAuthTask = null;
             showProgress(false);
 
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+            switch (msg)
+            {
+                case NONE:
+                    Utils.setGlobalBoolean(LoginActivity.this, "HAS_REGISTERED", true);
+
+                    // TODO: A dialogue popup might be more suitable here
+                    Toast.makeText(getApplicationContext(), "Success! You will now receive alerts in the notifcation menu.", Toast.LENGTH_LONG).show();
+                    finish();
+                    return;
+                case CANT_CONNECT:
+                    Toast.makeText(getApplicationContext(), "Unable to connect to server. Check network status or contact server administrator.", Toast.LENGTH_LONG).show();
+                    break;
+                case BAD_RESPONSE:
+                    Toast.makeText(getApplicationContext(), "Bad Response from CD9 Server", Toast.LENGTH_LONG).show();
+                    break;
+                case NO_ID:
+                    Toast.makeText(getApplicationContext(), "Unable to lookup parent", Toast.LENGTH_SHORT).show();
+                    break;
+                case CANT_REGISTER:
+                    Toast.makeText(getApplicationContext(), "Failed to register with cloud messaging service.", Toast.LENGTH_SHORT).show();
+                    break;
+
+
             }
+
+
+            mPasswordView.setError(getString(R.string.error_incorrect_password));
+            mPasswordView.requestFocus();
+
+
         }
+
+
 
         @Override
         protected void onCancelled() {
