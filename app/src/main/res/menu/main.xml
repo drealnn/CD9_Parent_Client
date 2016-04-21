@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:App="http://schemas.android.com/tools">
+    <item android:id="@+id/start_action"  App:showAsAction="ifRoom|withText" android:title="Reset" />
+</menu>
